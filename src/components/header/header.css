@@ -1,0 +1,152 @@
+.header {
+  background: rgb(245, 245, 245);
+  background: linear-gradient(
+    0deg,
+    rgba(245, 245, 245, 1) 0%,
+    rgba(255, 255, 255, 1) 4%,
+    rgba(254, 254, 254, 1) 16%,
+    rgba(254, 254, 254, 1) 24%,
+    rgba(255, 255, 255, 1) 28%,
+    rgba(248, 248, 248, 1) 47%,
+    rgba(235, 235, 235, 1) 67%,
+    rgba(240, 240, 240, 1) 98%,
+    rgba(179, 179, 179, 1) 100%
+  );
+  border-bottom: 1px solid rgb(210, 212, 255);
+  width: 100%;
+  height: 70px;
+  padding: 20px 20px 20px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-content: center;
+}
+
+@media (min-width: 768px) {
+  .header {
+    height: 80px;
+    padding: 25px 25px 25px 15px;
+  }
+}
+
+.logo {
+  cursor: pointer;
+  width: 70px;
+}
+
+@media (min-width: 768px) {
+  .logo {
+    width: 80px;
+  }
+}
+
+.logo-hamburger-menu {
+  cursor: pointer;
+  font-size: 40px;
+}
+
+@media (min-width: 768px) {
+  .logo-hamburger-menu {
+    display: none;
+  }
+}
+
+.hamburger-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.hamburger-menu.active {
+  transform: translateX(0);
+}
+
+.hamburger-menu ul {
+  list-style: none;
+  padding: 0;
+  text-align: center;
+}
+
+.hamburger-menu li {
+  font-size: 20px;
+  padding: 15px;
+  cursor: pointer;
+  transition: color 0.3s ease-in-out;
+}
+
+.hamburger-menu li:hover {
+  color: rgb(159, 124, 191);
+}
+
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .hamburger-menu {
+    display: none;
+  }
+}
+
+.menu {
+  display: flex;
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    gap: 20px;
+  }
+
+  @media (min-width: 1075px) {
+    ul {
+      gap: 30px;
+    }
+  }
+
+  li {
+    list-style-type: none;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+
+  @media (min-width: 900px) {
+    li {
+      font-size: 16px;
+    }
+  }
+
+  @media (min-width: 1075px) {
+    li {
+      font-size: 17px;
+    }
+  }
+
+  li:hover {
+    color: rgb(159, 124, 191);
+  }
+}
+
+@media (max-width: 768px) {
+  .menu {
+    display: none;
+  }
+}
