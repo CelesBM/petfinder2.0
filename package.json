@@ -20,6 +20,7 @@
     "live-server": "^1.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-router-dom": "^7.4.0",
     "style-loader": "^4.0.0"
   },
   "devDependencies": {

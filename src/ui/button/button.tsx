@@ -1,7 +1,19 @@
-import React from "react";
-import css from "./button.css";
+import React, { Children } from "react";
+import "./button.css";
 
-export function Buttonel() {
-  console.log(css);
-  return <button className={css.buttonel}>Botón UI</button>;
+export function ButtonPrincipal({
+  children,
+  type,
+  handleClick,
+  className = "",
+}) {
+  return (
+    <button
+      type={type}
+      onClick={handleClick}
+      className={`button ${className}`.trim()}
+    >
+      {children}
+    </button>
+  );
 }
