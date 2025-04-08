@@ -2,7 +2,6 @@ import React, { Children } from "react";
 import "./input.css";
 
 export function InputPrincipal({
-  children,
   type,
   placeholder,
   id,

@@ -1,14 +1,14 @@
 const path = require("path");
-const liveServer = require("live-server");
+//const liveServer = require("live-server");
 const dev = process.env.NODE_ENV == "development";
 const webpack = require("webpack");
 
-if (dev) {
+/*if (dev) {
   liveServer.start({
     root: "./",
     file: "index.html",
   });
-}
+}*/
 
 module.exports = {
   watch: dev,
@@ -38,10 +38,23 @@ module.exports = {
   },
   resolve: {
     extensions: [".tsx", ".js", ".ts", ".css"],
+    alias: {
+      react: path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+    },
   },
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",
+  },
+  devServer: {
+    static: {
+      directory: path.join(__dirname, "./"), // sirve archivos desde raíz
+    },
+    port: 5174,
+    host: "localhost",
+    open: true,
+    historyApiFallback: true, // necesario si usás React Router
   },
   plugins: [],
 };

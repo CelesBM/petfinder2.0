@@ -1,7 +1,21 @@
 import React from "react";
+import { Login } from "../../components/forms/forms";
+
+function LoginPage() {
+  const handleLogin = (email: string, password: string) => {
+    console.log("Email:", email);
+    console.log("Password:", password);
+  };
+  return <Login handleLogin={handleLogin} />;
+}
+
+export { LoginPage };
+
+/*import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
 import { ButtonPrincipal } from "../../ui/button/button";
+import { InputPrincipal } from "../../ui/input/input";
 
 function Login() {
   const navigate = useNavigate();
@@ -13,20 +27,18 @@ function Login() {
         <div className="login-container">
           <form>
             <label>Email:</label>
-            <input
+            <InputPrincipal
               type="email"
+              placeholder="Ingrese su email"
               id="email"
-              className="email"
               name="email"
-              required
             />
             <label>Contraseña:</label>
-            <input
+            <InputPrincipal
               type="password"
+              placeholder="Ingrese su contraseña"
               id="password"
-              className="password"
               name="password"
-              required
             />
             <ButtonPrincipal
               type="submit"
@@ -48,3 +60,4 @@ function Login() {
 }
 
 export { Login };
+*/
