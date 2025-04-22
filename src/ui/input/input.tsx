@@ -15,6 +15,7 @@ export function InputPrincipal({
       id={id}
       name={name}
       className={`input ${className}`.trim()}
+      required
     />
   );
 }

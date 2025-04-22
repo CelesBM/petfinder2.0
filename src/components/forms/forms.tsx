@@ -1,14 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./forms.css";
 import { ButtonPrincipal } from "../../ui/button/button";
 import { InputPrincipal } from "../../ui/input/input";
+import { ErrorMessage } from "../../ui/error/error";
 
 function Login({ handleLogin }) {
-  const onSubmit = (e) => {
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const onSubmit = async (e) => {
     e.preventDefault();
     const target = e.target as any;
-    handleLogin(target.email.value, target.password.value);
+    const email = target.email.value;
+    const password = target.password.value;
+
+    if (!email || !password) {
+      setError("Los campos requeridos son obligatorios.");
+      return;
+    }
+
+    setError("");
+    const loginError = await handleLogin(email, password);
+
+    if (loginError) {
+      setError(loginError);
+      return;
+    } else {
+      navigate("/personal-data");
+    }
   };
   return (
     <>
@@ -38,6 +57,7 @@ function Login({ handleLogin }) {
             >
               Iniciar sesión
             </ButtonPrincipal>
+            {error && <ErrorMessage message={error} />}
           </form>
           <Link to="/register" style={{ textDecoration: "none" }}>
             <p className="text-register">
@@ -51,14 +71,29 @@ function Login({ handleLogin }) {
 }
 
 function Register({ handleRegister }) {
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
   const onSubmit = (e) => {
     e.preventDefault();
     const target = e.target as any;
-    handleRegister(
-      target.email.value,
-      target.password.value,
-      target.confirm.value
-    );
+    const email = target.email.value;
+    const password = target.password.value;
+    const confirm = target.confirm.value;
+
+    if (!email || !password || !confirm) {
+      setError("Los campos requeridos son obligatorios.");
+      return;
+    }
+
+    if (password !== confirm) {
+      setError("Las contraseñas deben coincidir.");
+      return;
+    }
+
+    setError(""); //limpio si está todo ok
+
+    handleRegister(email, password, confirm);
+    navigate("/login");
   };
   return (
     <>
@@ -95,6 +130,7 @@ function Register({ handleRegister }) {
             >
               Registrarse
             </ButtonPrincipal>
+            {error && <ErrorMessage message={error} />}
           </form>
           <Link to="/login" style={{ textDecoration: "none" }}>
             <p className="text-register">

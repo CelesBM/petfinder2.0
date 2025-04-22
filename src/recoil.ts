@@ -34,3 +34,23 @@ export const userDataState = selector({
     }
   },
 });
+
+export const userLocationAtom = atom({
+  key: "userLocationAtom",
+  default: null,
+  effects_UNSTABLE: [persistAtom],
+});
+
+export const userLocationState = selector({
+  key: "userLocationState",
+  get: ({ get }) => {
+    const userLocation = get(userLocationAtom);
+    if (userLocation) {
+      return {
+        lat: userLocation.lat,
+        lng: userLocation.lng,
+        location: userLocation.location,
+      };
+    }
+  },
+});

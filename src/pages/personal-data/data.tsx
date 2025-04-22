@@ -2,9 +2,16 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./data.css";
 import { ButtonPrincipal } from "../../ui/button/button";
+import { useRecoilValue } from "recoil";
+import { userDataAtom } from "../../recoil";
 
 function Data() {
   const navigate = useNavigate();
+  const userData = useRecoilValue(userDataAtom);
+
+  const name = userData?.fullname || "Sin datos";
+  const location = userData?.localidad || "Sin datos";
+
   return (
     <>
       <section className="data">
@@ -13,10 +20,10 @@ function Data() {
         <div className="data-container">
           <div className="info">
             <h5>
-              Nombre: <span>Celeste</span>
+              Nombre: <span>{name}</span>
             </h5>
             <h5>
-              Localidad: <span>Quilmes</span>{" "}
+              Localidad: <span>{location}</span>
             </h5>
           </div>
 
