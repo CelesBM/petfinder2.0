@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./forms.css";
 import { ButtonPrincipal } from "../../ui/button/button";
 import { InputPrincipal } from "../../ui/input/input";
 import { ErrorMessage } from "../../ui/error/error";
+import "./forms.css";
 
 function Login({ handleLogin }) {
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
   const onSubmit = async (e) => {
     e.preventDefault();
     const target = e.target as any;
@@ -29,6 +30,7 @@ function Login({ handleLogin }) {
       navigate("/personal-data");
     }
   };
+
   return (
     <>
       <section className="log-container">
@@ -73,6 +75,7 @@ function Login({ handleLogin }) {
 function Register({ handleRegister }) {
   const navigate = useNavigate();
   const [error, setError] = useState("");
+
   const onSubmit = (e) => {
     e.preventDefault();
     const target = e.target as any;
@@ -84,17 +87,16 @@ function Register({ handleRegister }) {
       setError("Los campos requeridos son obligatorios.");
       return;
     }
-
     if (password !== confirm) {
       setError("Las contraseñas deben coincidir.");
       return;
     }
 
     setError(""); //limpio si está todo ok
-
     handleRegister(email, password, confirm);
     navigate("/login");
   };
+
   return (
     <>
       <section className="log-container">

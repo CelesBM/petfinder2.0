@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { loggedInState } from "../../recoil";
+import { useLogOut } from "../../hooks/hooks";
 import "./header.css";
 
 function Header() {
   const navigate = useNavigate();
+  const token = useRecoilValue(loggedInState);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { handleLogOut } = useLogOut();
 
   return (
     <header className="header">
@@ -26,11 +31,15 @@ function Header() {
         <ul>
           <li
             onClick={() => {
-              navigate("/login");
+              if (token) {
+                handleLogOut();
+              } else {
+                navigate("/login");
+              }
               setMenuOpen(false);
             }}
           >
-            Iniciar sesión
+            {token ? "Cerrar sesión" : "Iniciar sesión"}
           </li>
           <li
             onClick={() => {
@@ -49,10 +58,15 @@ function Header() {
         <ul>
           <li
             onClick={() => {
-              navigate("/login");
+              if (token) {
+                handleLogOut();
+              } else {
+                navigate("/login");
+              }
+              setMenuOpen(false);
             }}
           >
-            Iniciar sesión
+            {token ? "Cerrar sesión" : "Iniciar sesión"}
           </li>
           <li
             onClick={() => {

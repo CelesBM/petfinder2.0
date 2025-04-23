@@ -1,7 +1,12 @@
 import { useRecoilState, useRecoilValue } from "recoil";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
-import { loggedInAtom, userDataAtom, userDataState } from "../recoil";
+import {
+  loggedInAtom,
+  userDataAtom,
+  userDataState,
+  userLocationAtom,
+} from "../recoil";
 import { registerAPI, loginAPI, updateUserDataAPI } from "../lib/api";
 
 export function useLogin() {
@@ -29,7 +34,7 @@ export function useLogin() {
         const res = await loginAPI(email, password);
         setToken(res.token);
         setUserData(res.user);
-        console.log("Respuesta login/register:", res);
+        //console.log("Respuesta login/register:", res); obtengo user y token
       } catch (error: any) {
         console.error("Error en loginAPI:", error.message);
         return error.message;
@@ -88,4 +93,22 @@ export function useUpdateUserData() {
   }, [userData]);
 
   return { handleUpdateUserData };
+}
+
+export function useLogOut() {
+  const [loggedIn, setLogIn] = useRecoilState(loggedInAtom);
+  const [userData, setUserData] = useRecoilState(userDataAtom);
+  const [location, setUserLocation] = useRecoilState(userLocationAtom);
+  //const [userReports, setUserReports] = useRecoilState(userReportsAtom);
+  //const [lostPets, setLostPets] = useRecoilState(lostPetsAtom);
+  const navigate = useNavigate();
+  function handleLogOut() {
+    navigate("/");
+    setLogIn(null);
+    setUserData(null);
+    setUserLocation(null);
+    //setUserReports(null);
+    //setLostPets(null);
+  }
+  return { handleLogOut };
 }

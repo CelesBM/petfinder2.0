@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./edit.css";
 import { ButtonPrincipal } from "../../ui/button/button";
@@ -13,7 +13,6 @@ function EditData() {
   const locationData = useRecoilValue(userLocationAtom);
   const { handleUpdateUserData } = useUpdateUserData();
   const userData = useRecoilValue(userDataAtom);
-  console.log("userData desde EditData:", userData);
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
