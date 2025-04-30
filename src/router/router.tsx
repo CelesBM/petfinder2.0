@@ -11,6 +11,8 @@ import { LoginPage } from "../pages/login/login";
 import { RegisterPage } from "../pages/register/register";
 import { Data } from "../pages/personal-data/data";
 import { EditData } from "../pages/personal-data/edit";
+import { CreateReportPage } from "../pages/report/create-report";
+import { MyReportsPage } from "../pages/report/my-reports";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -21,6 +23,8 @@ const router = createBrowserRouter(
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/personal-data" element={<Data />} />
       <Route path="/edit-personal-data" element={<EditData />} />
+      <Route path="/create-report" element={<CreateReportPage />} />
+      <Route path="/my-reports" element={<MyReportsPage />} />
     </Route>
   )
 );

@@ -54,3 +54,23 @@ export const userLocationState = selector({
     }
   },
 });
+
+export const reportPet = atom({
+  key: "reportPet",
+  default: null,
+  effects_UNSTABLE: [persistAtom],
+});
+
+export const reportPetState = selector({
+  key: "reportState",
+  get: ({ get }) => {
+    const status = get(reportPet);
+    return status;
+  },
+});
+
+export const userReportsAtom = atom({
+  key: "userReports",
+  default: null,
+  effects_UNSTABLE: [persistAtom],
+});

@@ -50,8 +50,22 @@ function Header() {
             Mis datos
           </li>
           <li>Reportes cercanos</li>
-          <li>Mis reportes</li>
-          <li>Reportar mascota</li>
+          <li
+            onClick={() => {
+              navigate("/my-reports");
+              setMenuOpen(false);
+            }}
+          >
+            Mis reportes
+          </li>
+          <li
+            onClick={() => {
+              navigate("/create-report");
+              setMenuOpen(false);
+            }}
+          >
+            Reportar mascota
+          </li>
         </ul>
       </nav>
       <div className="menu">
@@ -76,8 +90,22 @@ function Header() {
             Mis datos
           </li>
           <li>Reportes cercanos</li>
-          <li>Mis reportes</li>
-          <li>Reportar mascota</li>
+          <li
+            onClick={() => {
+              navigate("/my-reports");
+              setMenuOpen(false);
+            }}
+          >
+            Mis reportes
+          </li>
+          <li
+            onClick={() => {
+              navigate("/create-report");
+              setMenuOpen(false);
+            }}
+          >
+            Reportar mascota
+          </li>
         </ul>
       </div>
     </header>

@@ -11,7 +11,7 @@ const webpack = require("webpack");
 }*/
 
 module.exports = {
-  watch: dev,
+  // watch: dev,
   mode: "development",
   entry: "./src/index.tsx",
   module: {
@@ -33,7 +33,6 @@ module.exports = {
           },
         ],
       },
-      ,
     ],
   },
   resolve: {

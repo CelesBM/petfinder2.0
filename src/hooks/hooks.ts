@@ -6,8 +6,16 @@ import {
   userDataAtom,
   userDataState,
   userLocationAtom,
+  reportPet,
+  userReportsAtom,
 } from "../recoil";
-import { registerAPI, loginAPI, updateUserDataAPI } from "../lib/api";
+import {
+  registerAPI,
+  loginAPI,
+  updateUserDataAPI,
+  reportPetAPI,
+  getAllPetsAPI,
+} from "../lib/api";
 
 export function useLogin() {
   const [token, setToken] = useRecoilState(loggedInAtom);
@@ -111,4 +119,29 @@ export function useLogOut() {
     //setLostPets(null);
   }
   return { handleLogOut };
+}
+
+export function useReportPet() {
+  const [report, setReport] = useRecoilState(reportPet);
+  async function handleReportPet(
+    name: string,
+    dataURL: string,
+    lat: number,
+    lng: number,
+    token: string
+  ) {
+    const res = await reportPetAPI(name, dataURL, lat, lng, token);
+    setReport(res);
+  }
+  return { handleReportPet };
+}
+
+export function useUserReports() {
+  const [userReports, setUserReports] = useRecoilState(userReportsAtom);
+  async function handleUpdateUserReports(token: string) {
+    const res = await getAllPetsAPI(token);
+    setUserReports(res);
+  }
+
+  return { handleUpdateUserReports };
 }

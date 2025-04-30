@@ -90,3 +90,32 @@ export async function getCoords(
     return null;
   }
 }
+
+export async function reportPetAPI(
+  petName: string,
+  imgURL: string,
+  lat: number,
+  lng: number,
+  token: string
+) {
+  const responseReport = await fetch(API_BASE_URL + "/create-report", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: "bearer " + token,
+    },
+    body: JSON.stringify({ petName, imgURL, lat, lng }),
+  });
+  return responseReport.json();
+}
+
+export async function getAllPetsAPI(token: string) {
+  const res = await fetch(API_BASE_URL + "/pets", {
+    method: "GET",
+    headers: {
+      "Content-type": "application/json",
+      authorization: "bearer " + token,
+    },
+  });
+  return res.json();
+}
