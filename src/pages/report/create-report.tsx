@@ -6,8 +6,23 @@ import { ReportPet } from "../../components/reports/reports"; //import { ReportL
 import { useReportPet, useUserReports } from "../../hooks/hooks";
 
 function CreateReportPage() {
-  const handleLogin = console.log("todo ok");
-  return <ReportPet handleLogin={handleLogin} />;
+  const navigate = useNavigate();
+  const token = useRecoilValue(loggedInState);
+  const reportState = useRecoilValue(reportPetState);
+
+  //const {handleReport} = useReportPet();
+  //const {handleUserReports} = useUserReports();
+  const [report, setReport] = useRecoilState(reportPet);
+
+  /* useEffect(() => {
+    if (reportState) {
+      setReport(null);
+      handleUserReports(token);
+     
+    }
+  }, [handleReport]);*/
+
+  return <ReportPet />;
 }
 
 export { CreateReportPage };

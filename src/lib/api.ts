@@ -91,6 +91,22 @@ export async function getCoords(
   }
 }
 
+export async function getLocationFromCoords(
+  lat: number,
+  lng: number
+): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
+    );
+    const data = await response.json();
+    return data.display_name || null;
+  } catch (error) {
+    console.error("Error en getAddressFromCoords:", error);
+    return null;
+  }
+}
+
 export async function reportPetAPI(
   petName: string,
   imgURL: string,

@@ -1,34 +1,112 @@
-import React, { useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ButtonPrincipal } from "../../ui/button/button";
 import { InputPrincipal } from "../../ui/input/input";
 import { ErrorMessage } from "../../ui/error/error";
+import { useRecoilState, useRecoilValue } from "recoil";
+import {
+  userLocationAtom,
+  loggedInAtom,
+  userDataAtom,
+  reportPet,
+} from "../../recoil";
+import { MapSelector } from "../map/map";
+import { getCoords, reportPetAPI } from "../../lib/api";
 import "./reports.css";
 
-function ReportPet({ handleLogin }) {
-  const [error, setError] = useState("");
+function ReportPet({}) {
+  const userData = useRecoilValue(userDataAtom); //datos del usuario
+  const token = useRecoilValue(loggedInAtom); //token del usuario
+  const fileInputRef = useRef<HTMLInputElement>(null); //referencia a un elemento input de tipo file inicializado como null
   const navigate = useNavigate();
+
+  const [error, setError] = useState("");
+  const [imgURL, setImgURL] = useState(
+    "https://res.cloudinary.com/dkzmrfgus/image/upload/v1715798301/pet-finder/reports/gdiqwa4ttphpeuaarxzw.png"
+  );
+  const [userLocation, setUserLocation] = useRecoilState(userLocationAtom); //ubicación del usuario
+  const [petReport, setPetReport] = useRecoilState(reportPet); //guardar reporte en recoil
+
+  const handleImage = (e) => {
+    const file = e.target.files?.[0]; //primer archivo seleccionado
+    console.log("Archivo seleccionado:", file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      console.log("Resultado base64:", reader.result);
+      setImgURL(reader.result as string); //almacena URL de imagen
+    };
+    if (file) {
+      reader.readAsDataURL(file);
+      console.log("Leyendo archivo...", file);
+    } else {
+      console.log("No se seleccionó ningún archivo.");
+    }
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
     const target = e.target as any;
     const petName = target.petName.value;
-    const petImg = target.petImg.value;
+    console.log("petname:", petName);
+    const petImgFile = target.petImg.files[0];
+    console.log("petimgfile:", petImgFile);
     const petLocation = target.petLocation.value;
+    console.log("petlocation:", petLocation);
 
-    if (!petName || !petImg || petLocation) {
+    if (!petName || !petImgFile || !petLocation) {
       setError("Los campos requeridos son obligatorios.");
       return;
     }
 
-    setError("");
-    /* const loginError = await handleLogin(email, password);
+    try {
+      // setError("Subiendo imagen...");
+      const formData = new FormData();
+      formData.append("file", petImgFile);
+      formData.append("upload_preset", "pet-finder");
+      console.log("subiendo imagen a cloudinary");
 
-    if (loginError) {
-      setError(loginError);
-      return;
-    } else {
-      navigate("/personal-data");
+      const uploadRes = await fetch(
+        "https://api.cloudinary.com/v1_1/ddaw8l94t/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const uploadData = await uploadRes.json();
+      console.log("res cloudinary:", uploadData);
+      const cloudinaryUrl = uploadData.secure_url;
+      console.log("Imagen subida:", cloudinaryUrl);
+    } catch (error) {
+      console.error("Error al subir imagen:", error);
+      setError("Error al subir imagen.");
+    }
+
+    /*if (!cloudinaryUrl) {
+        throw new Error("No se pudo subir la imagen.");
+      }
+      console.log("✅ Imagen subida:", cloudinaryUrl);
+      setError("Guardando reporte...");*/
+
+    //const token = localStorage.getItem("token") || ""; // O usa el token desde Recoil
+
+    // Enviar datos al backend
+    /*  const res = await reportPetAPI(
+        petName,
+        cloudinaryUrl,
+        userLocation.lat,
+        userLocation.lng,
+        token
+      );*/
+
+    /*if (res && res.id) {
+        setPetReport({ petName, imgURL: cloudinaryUrl, location: petLocation }); // Guardar el reporte en Recoil
+        navigate("/create-report"); // Redirige donde desees
+      } else {
+        setError("Error al guardar el reporte.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Ocurrió un error");
     }*/
   };
 
@@ -43,32 +121,73 @@ function ReportPet({ handleLogin }) {
             <InputPrincipal
               type="text"
               placeholder="Ingrese el nombre de la mascota"
-              id="name"
-              name="name"
+              id="petName"
+              name="petName"
             />
             <div className="img-container">
               <label>Adjuntar foto 👇</label>
+              <input
+                type="file"
+                name="petImg"
+                id="petImg"
+                accept="image/*"
+                onChange={handleImage}
+                ref={fileInputRef}
+                style={{ display: "none" }}
+              />
               <img
-                src="https://res.cloudinary.com/dkzmrfgus/image/upload/v1715798301/pet-finder/reports/gdiqwa4ttphpeuaarxzw.png"
-                alt="pet"
+                src={imgURL}
+                alt="preview"
+                className="preview-img"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  cursor: "pointer",
+                  width: "100%",
+                  maxWidth: "300px",
+                  borderRadius: "12px",
+                }}
               />
             </div>
             <div className="map-container">
               <label>Ubicación:</label>
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1025px-Cat03.jpg"
-                alt="map"
+              <MapSelector
+                onSelect={(lat, lng, location) => {
+                  setUserLocation({ lat, lng, location: location || "" });
+                  const input = document.getElementById(
+                    "petLocation"
+                  ) as HTMLInputElement;
+                  if (input && location) {
+                    input.value = location;
+                  }
+                }}
               />
               <InputPrincipal
                 type="text"
                 placeholder="Ingrese la ubicación"
-                id="location"
-                name="location"
+                id="petLocation"
+                name="petLocation"
               />
               <ButtonPrincipal
-                type="submit"
+                type="button"
                 className="search-button"
-                handleClick={() => {}}
+                handleClick={async () => {
+                  const input = document.getElementById(
+                    "petLocation"
+                  ) as HTMLInputElement;
+                  const location = input?.value;
+                  if (location) {
+                    const coords = await getCoords(location);
+                    if (coords) {
+                      setUserLocation({
+                        lat: coords.lat,
+                        lng: coords.lng,
+                        location,
+                      });
+                    } else {
+                      setError("No se encontró la ubicación");
+                    }
+                  }
+                }}
               >
                 Buscar
               </ButtonPrincipal>
@@ -89,7 +208,9 @@ function ReportPet({ handleLogin }) {
               <ButtonPrincipal
                 type="submit"
                 className="cancel-button"
-                handleClick={() => {}}
+                handleClick={() => {
+                  navigate("/my-reports");
+                }}
               >
                 Cancelar
               </ButtonPrincipal>
