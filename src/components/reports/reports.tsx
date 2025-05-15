@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ButtonPrincipal } from "../../ui/button/button";
 import { InputPrincipal } from "../../ui/input/input";
 import { ErrorMessage } from "../../ui/error/error";
@@ -15,8 +15,8 @@ import { getCoords, reportPetAPI } from "../../lib/api";
 import "./reports.css";
 
 function ReportPet({}) {
-  const userData = useRecoilValue(userDataAtom); //datos del usuario
-  const token = useRecoilValue(loggedInAtom); //token del usuario
+  const userData = useRecoilValue(userDataAtom); //datos del usuario: email, fullname, id, localidad, userLat, userLong
+  //const token = useRecoilValue(loggedInAtom); //token del usuario
   const fileInputRef = useRef<HTMLInputElement>(null); //referencia a un elemento input de tipo file inicializado como null
   const navigate = useNavigate();
 
@@ -24,20 +24,17 @@ function ReportPet({}) {
   const [imgURL, setImgURL] = useState(
     "https://res.cloudinary.com/dkzmrfgus/image/upload/v1715798301/pet-finder/reports/gdiqwa4ttphpeuaarxzw.png"
   );
-  const [userLocation, setUserLocation] = useRecoilState(userLocationAtom); //ubicación del usuario
+  const [userLocation, setUserLocation] = useRecoilState(userLocationAtom);
   const [petReport, setPetReport] = useRecoilState(reportPet); //guardar reporte en recoil
 
   const handleImage = (e) => {
     const file = e.target.files?.[0]; //primer archivo seleccionado
-    console.log("Archivo seleccionado:", file);
     const reader = new FileReader();
     reader.onloadend = () => {
-      console.log("Resultado base64:", reader.result);
       setImgURL(reader.result as string); //almacena URL de imagen
     };
     if (file) {
       reader.readAsDataURL(file);
-      console.log("Leyendo archivo...", file);
     } else {
       console.log("No se seleccionó ningún archivo.");
     }
@@ -47,23 +44,18 @@ function ReportPet({}) {
     e.preventDefault();
     const target = e.target as any;
     const petName = target.petName.value;
-    console.log("petname:", petName);
-    const petImgFile = target.petImg.files[0];
-    console.log("petimgfile:", petImgFile);
+    const petImgURL = target.petImg.files[0];
     const petLocation = target.petLocation.value;
-    console.log("petlocation:", petLocation);
 
-    if (!petName || !petImgFile || !petLocation) {
+    if (!petName || !petImgURL || !petLocation) {
       setError("Los campos requeridos son obligatorios.");
       return;
     }
 
     try {
-      // setError("Subiendo imagen...");
       const formData = new FormData();
-      formData.append("file", petImgFile);
+      formData.append("file", petImgURL);
       formData.append("upload_preset", "pet-finder");
-      console.log("subiendo imagen a cloudinary");
 
       const uploadRes = await fetch(
         "https://api.cloudinary.com/v1_1/ddaw8l94t/image/upload",
@@ -73,41 +65,33 @@ function ReportPet({}) {
         }
       );
       const uploadData = await uploadRes.json();
-      console.log("res cloudinary:", uploadData);
       const cloudinaryUrl = uploadData.secure_url;
       console.log("Imagen subida:", cloudinaryUrl);
+
+      const userId = userData.id;
+      const petLat = userLocation.lat;
+      const petLong = userLocation.lng;
+      const petState = "lost";
+      const res = await reportPetAPI(
+        userId,
+        petName,
+        cloudinaryUrl,
+        petState,
+        petLat,
+        petLong,
+        petLocation
+      );
+
+      if (res && res.id) {
+        setPetReport(res);
+        navigate("/my-reports");
+      } else {
+        setError("Error al guardar el reporte.");
+      }
     } catch (error) {
       console.error("Error al subir imagen:", error);
       setError("Error al subir imagen.");
     }
-
-    /*if (!cloudinaryUrl) {
-        throw new Error("No se pudo subir la imagen.");
-      }
-      console.log("✅ Imagen subida:", cloudinaryUrl);
-      setError("Guardando reporte...");*/
-
-    //const token = localStorage.getItem("token") || ""; // O usa el token desde Recoil
-
-    // Enviar datos al backend
-    /*  const res = await reportPetAPI(
-        petName,
-        cloudinaryUrl,
-        userLocation.lat,
-        userLocation.lng,
-        token
-      );*/
-
-    /*if (res && res.id) {
-        setPetReport({ petName, imgURL: cloudinaryUrl, location: petLocation }); // Guardar el reporte en Recoil
-        navigate("/create-report"); // Redirige donde desees
-      } else {
-        setError("Error al guardar el reporte.");
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Ocurrió un error");
-    }*/
   };
 
   return (

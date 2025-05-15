@@ -108,21 +108,30 @@ export async function getLocationFromCoords(
 }
 
 export async function reportPetAPI(
+  userId: number,
   petName: string,
-  imgURL: string,
-  lat: number,
-  lng: number,
-  token: string
+  petImgURL: string,
+  petState: string,
+  petLat: number,
+  petLong: number,
+  petLocation: string
 ) {
-  const responseReport = await fetch(API_BASE_URL + "/create-report", {
+  const response = await fetch(API_BASE_URL + "/create-report", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      authorization: "bearer " + token,
     },
-    body: JSON.stringify({ petName, imgURL, lat, lng }),
+    body: JSON.stringify({
+      userId,
+      petName,
+      petImgURL,
+      petState,
+      petLat,
+      petLong,
+      petLocation,
+    }),
   });
-  return responseReport.json();
+  return response.json();
 }
 
 export async function getAllPetsAPI(token: string) {

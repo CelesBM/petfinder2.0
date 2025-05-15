@@ -42,7 +42,6 @@ export function useLogin() {
         const res = await loginAPI(email, password);
         setToken(res.token);
         setUserData(res.user);
-        //console.log("Respuesta login/register:", res); obtengo user y token
       } catch (error: any) {
         console.error("Error en loginAPI:", error.message);
         return error.message;
@@ -86,7 +85,7 @@ export function useUpdateUserData() {
         userData.id,
         token
       );
-      setUserData(res); // Actualizamos los datos globales
+      setUserData(res);
     } catch (error) {
       console.error("Error en updateUserData:", error);
     }
@@ -107,15 +106,14 @@ export function useLogOut() {
   const [loggedIn, setLogIn] = useRecoilState(loggedInAtom);
   const [userData, setUserData] = useRecoilState(userDataAtom);
   const [location, setUserLocation] = useRecoilState(userLocationAtom);
-  //const [userReports, setUserReports] = useRecoilState(userReportsAtom);
-  //const [lostPets, setLostPets] = useRecoilState(lostPetsAtom);
+  const [userReports, setUserReports] = useRecoilState(userReportsAtom);
   const navigate = useNavigate();
   function handleLogOut() {
     navigate("/");
     setLogIn(null);
     setUserData(null);
     setUserLocation(null);
-    //setUserReports(null);
+    setUserReports(null);
     //setLostPets(null);
   }
   return { handleLogOut };
@@ -124,13 +122,23 @@ export function useLogOut() {
 export function useReportPet() {
   const [report, setReport] = useRecoilState(reportPet);
   async function handleReportPet(
-    name: string,
-    dataURL: string,
-    lat: number,
-    lng: number,
-    token: string
+    userId: number,
+    petName: string,
+    petImgURL: string,
+    petState: string,
+    petLat: number,
+    petLong: number,
+    petLocation: string
   ) {
-    const res = await reportPetAPI(name, dataURL, lat, lng, token);
+    const res = await reportPetAPI(
+      userId,
+      petName,
+      petImgURL,
+      petState,
+      petLat,
+      petLong,
+      petLocation
+    );
     setReport(res);
   }
   return { handleReportPet };
