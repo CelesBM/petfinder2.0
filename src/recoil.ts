@@ -57,7 +57,7 @@ export const userLocationState = selector({
 
 export const reportPet = atom({
   key: "reportPet",
-  default: null,
+  default: [],
   effects_UNSTABLE: [persistAtom],
 });
 
@@ -71,6 +71,12 @@ export const reportPetState = selector({
 
 export const userReportsAtom = atom({
   key: "userReports",
+  default: [],
+  effects_UNSTABLE: [persistAtom],
+});
+
+export const reportIdAtom = atom({
+  key: "reportId",
   default: null,
   effects_UNSTABLE: [persistAtom],
 });

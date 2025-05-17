@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ButtonPrincipal } from "../../ui/button/button";
 import { InputPrincipal } from "../../ui/input/input";
@@ -9,7 +9,12 @@ import {
   loggedInAtom,
   userDataAtom,
   reportPet,
+  loggedInState,
+  reportPetState,
+  reportIdAtom,
+  userReportsAtom,
 } from "../../recoil";
+import { useUserReports } from "../../hooks/hooks";
 import { MapSelector } from "../map/map";
 import { getCoords, reportPetAPI } from "../../lib/api";
 import "./reports.css";
@@ -19,7 +24,8 @@ function ReportPet({}) {
   //const token = useRecoilValue(loggedInAtom); //token del usuario
   const fileInputRef = useRef<HTMLInputElement>(null); //referencia a un elemento input de tipo file inicializado como null
   const navigate = useNavigate();
-
+  const { handleUpdateUserReports } = useUserReports();
+  const [userReports, setUserReports] = useRecoilState(userReportsAtom);
   const [error, setError] = useState("");
   const [imgURL, setImgURL] = useState(
     "https://res.cloudinary.com/dkzmrfgus/image/upload/v1715798301/pet-finder/reports/gdiqwa4ttphpeuaarxzw.png"
@@ -83,7 +89,9 @@ function ReportPet({}) {
       );
 
       if (res && res.id) {
-        setPetReport(res);
+        // setPetReport([res]);
+        setUserReports((prev) => [...(prev || []), res]); // ✅ agrega el nuevo al array
+
         navigate("/my-reports");
       } else {
         setError("Error al guardar el reporte.");
@@ -207,119 +215,63 @@ function ReportPet({}) {
   );
 }
 
-function MyReports({}) {
+function MyReports() {
+  const navigate = useNavigate();
+  const token = useRecoilValue(loggedInState);
+  const userData = useRecoilValue(userDataAtom);
+  const userReports = useRecoilValue(userReportsAtom); // ✅
+  const [reportId, setReportId] = useRecoilState(reportIdAtom);
+
+  console.log("userdata", userData);
+  console.log("userReports", userReports);
+
+  const { handleUpdateUserReports } = useUserReports();
+
+  useEffect(() => {
+    if (token) {
+      handleUpdateUserReports(token);
+    }
+  }, [token]);
+
   return (
-    <>
-      <section className="myreports-container">
-        <h1>Mis reportes</h1>
+    <section className="myreports-container">
+      <h1>Mis reportes</h1>
+      {Array.isArray(userReports) && userReports.length > 0 ? (
         <div className="container">
-          <div className="pet-container">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1025px-Cat03.jpg"
-              alt=""
-            />
-            <div className="info-pet">
-              <h3>Firulais</h3>
-              <h5>Larrea 407, Quilmes.</h5>
+          {userReports.map((report) => (
+            <div className="pet-container" key={report.id}>
+              <img src={report.petImgURL} alt={`Mascota: ${report.petName}`} />
+              <div className="info-pet">
+                <h3>{report.petName}</h3>
+                <h5>{report.petLocation}</h5>
+              </div>
+              <div className="button-container">
+                <ButtonPrincipal
+                  type="button"
+                  className="edit-button"
+                  handleClick={() => {
+                    navigate(`/edit-report/${report.id}`);
+                  }}
+                >
+                  Editar
+                </ButtonPrincipal>
+                <ButtonPrincipal
+                  type="button"
+                  className="delete-button"
+                  handleClick={() => {
+                    // Futuro: eliminar mascota
+                  }}
+                >
+                  Eliminar
+                </ButtonPrincipal>
+              </div>
             </div>
-            <div className="button-container">
-              <ButtonPrincipal
-                type="submit"
-                className="edit-button"
-                handleClick={() => {}}
-              >
-                Editar
-              </ButtonPrincipal>
-              <ButtonPrincipal
-                type="submit"
-                className="delete-button"
-                handleClick={() => {}}
-              >
-                Eliminar
-              </ButtonPrincipal>
-            </div>
-          </div>
-          <div className="pet-container">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1025px-Cat03.jpg"
-              alt=""
-            />
-            <div className="info-pet">
-              <h3>Firulais</h3>
-              <h5>Larrea 407, Quilmes.</h5>
-            </div>
-            <div className="button-container">
-              <ButtonPrincipal
-                type="submit"
-                className="edit-button"
-                handleClick={() => {}}
-              >
-                Editar
-              </ButtonPrincipal>
-              <ButtonPrincipal
-                type="submit"
-                className="delete-button"
-                handleClick={() => {}}
-              >
-                Eliminar
-              </ButtonPrincipal>
-            </div>
-          </div>
-          <div className="pet-container">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1025px-Cat03.jpg"
-              alt=""
-            />
-            <div className="info-pet">
-              <h3>Firulais</h3>
-              <h5>Larrea 407, Quilmes.</h5>
-            </div>
-            <div className="button-container">
-              <ButtonPrincipal
-                type="submit"
-                className="edit-button"
-                handleClick={() => {}}
-              >
-                Editar
-              </ButtonPrincipal>
-              <ButtonPrincipal
-                type="submit"
-                className="delete-button"
-                handleClick={() => {}}
-              >
-                Eliminar
-              </ButtonPrincipal>
-            </div>
-          </div>
-          <div className="pet-container">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1025px-Cat03.jpg"
-              alt=""
-            />
-            <div className="info-pet">
-              <h3>Firulais</h3>
-              <h5>Larrea 407, Quilmes.</h5>
-            </div>
-            <div className="button-container">
-              <ButtonPrincipal
-                type="submit"
-                className="edit-button"
-                handleClick={() => {}}
-              >
-                Editar
-              </ButtonPrincipal>
-              <ButtonPrincipal
-                type="submit"
-                className="delete-button"
-                handleClick={() => {}}
-              >
-                Eliminar
-              </ButtonPrincipal>
-            </div>
-          </div>
+          ))}
         </div>
-      </section>
-    </>
+      ) : (
+        <p>No reportaste ninguna mascota aún.</p>
+      )}
+    </section>
   );
 }
 

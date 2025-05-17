@@ -134,8 +134,8 @@ export async function reportPetAPI(
   return response.json();
 }
 
-export async function getAllPetsAPI(token: string) {
-  const res = await fetch(API_BASE_URL + "/pets", {
+export async function getAllPetsAPI(token: string, userId: number) {
+  const res = await fetch(API_BASE_URL + `/pets?userId=${userId}`, {
     method: "GET",
     headers: {
       "Content-type": "application/json",

@@ -1,4 +1,4 @@
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -145,11 +145,16 @@ export function useReportPet() {
 }
 
 export function useUserReports() {
-  const [userReports, setUserReports] = useRecoilState(userReportsAtom);
-  async function handleUpdateUserReports(token: string) {
-    const res = await getAllPetsAPI(token);
-    setUserReports(res);
-  }
-
+  const setUserReports = useSetRecoilState(userReportsAtom);
+  const userData = useRecoilValue(userDataAtom); //accedo al userId
+  const handleUpdateUserReports = async (token: string) => {
+    try {
+      const data = await getAllPetsAPI(token, userData.id);
+      setUserReports(data);
+    } catch (error) {
+      console.error("Error useUserReports:", error);
+      setUserReports([]);
+    }
+  };
   return { handleUpdateUserReports };
 }

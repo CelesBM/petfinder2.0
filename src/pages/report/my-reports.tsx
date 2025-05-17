@@ -6,6 +6,14 @@ import { MyReports } from "../../components/reports/reports"; //import { ReportL
 import { useReportPet, useUserReports } from "../../hooks/hooks";
 
 function MyReportsPage() {
+  const { handleUpdateUserReports } = useUserReports();
+  const token = useRecoilValue(loggedInState);
+
+  useEffect(() => {
+    if (token) {
+      handleUpdateUserReports(token);
+    }
+  }, [token]);
   return <MyReports />;
 }
 
