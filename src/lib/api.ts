@@ -135,12 +135,55 @@ export async function reportPetAPI(
 }
 
 export async function getAllPetsAPI(token: string, userId: number) {
-  const res = await fetch(API_BASE_URL + `/pets?userId=${userId}`, {
+  const response = await fetch(API_BASE_URL + `/pets?userId=${userId}`, {
     method: "GET",
     headers: {
       "Content-type": "application/json",
       authorization: "bearer " + token,
     },
   });
-  return res.json();
+  return response.json();
+}
+
+export async function deletePetAPI(token: string, id: number) {
+  const response = await fetch(API_BASE_URL + `/delete-report`, {
+    method: "POST",
+    headers: {
+      "Content-type": "application/json",
+      authorization: "bearer " + token,
+    },
+    body: JSON.stringify({
+      id,
+    }),
+  });
+  return response.json();
+}
+
+export async function editPetAPI(
+  id: number,
+  userId: number,
+  petName: string,
+  petImgURL: string,
+  petState: "Perdido",
+  petLat: number,
+  petLong: number,
+  petLocation: string
+) {
+  const response = await fetch(API_BASE_URL + `/edit-report`, {
+    method: "POST",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({
+      id,
+      userId,
+      petName,
+      petImgURL,
+      petState,
+      petLat,
+      petLong,
+      petLocation,
+    }),
+  });
+  return response.json();
 }

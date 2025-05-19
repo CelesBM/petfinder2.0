@@ -167,6 +167,10 @@
       flex-direction: row;
       flex-wrap: wrap;
     }
+
+    @media (min-width: 1020px) {
+      gap: 60px;
+    }
   }
 
   h1 {
@@ -201,14 +205,22 @@
     background-color: rgb(248, 249, 253);
     box-shadow: 0px 4px 12px rgba(138, 43, 226, 0.2);
     transition: box-shadow 0.5s ease-in-out;
-    max-width: 300px;
+    width: 280px;
+    max-width: 500px;
+    height: 550px;
 
     @media (min-width: 460px) {
       padding: 50px 50px;
+      width: 350px;
     }
 
     @media (min-width: 850px) {
       padding: 70px 60px;
+      height: 650px;
+    }
+
+    @media (min-width: 1020px) {
+      width: 400px;
     }
 
     img {

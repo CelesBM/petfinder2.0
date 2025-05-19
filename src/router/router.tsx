@@ -13,6 +13,7 @@ import { Data } from "../pages/personal-data/data";
 import { EditData } from "../pages/personal-data/edit";
 import { CreateReportPage } from "../pages/report/create-report";
 import { MyReportsPage } from "../pages/report/my-reports";
+import { EditReportPage } from "../pages/report/edit-report";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -25,6 +26,7 @@ const router = createBrowserRouter(
       <Route path="/edit-personal-data" element={<EditData />} />
       <Route path="/create-report" element={<CreateReportPage />} />
       <Route path="/my-reports" element={<MyReportsPage />} />
+      <Route path="/edit-report" element={<EditReportPage />} />
     </Route>
   )
 );

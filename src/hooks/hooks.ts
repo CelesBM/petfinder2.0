@@ -8,6 +8,7 @@ import {
   userLocationAtom,
   reportPet,
   userReportsAtom,
+  loggedInState,
 } from "../recoil";
 import {
   registerAPI,
@@ -15,6 +16,8 @@ import {
   updateUserDataAPI,
   reportPetAPI,
   getAllPetsAPI,
+  deletePetAPI,
+  editPetAPI,
 } from "../lib/api";
 
 export function useLogin() {
@@ -157,4 +160,64 @@ export function useUserReports() {
     }
   };
   return { handleUpdateUserReports };
+}
+
+export function useDeletePet() {
+  const setUserReports = useSetRecoilState(userReportsAtom);
+  const token = useRecoilValue(loggedInState);
+  const userReports = useRecoilValue(userReportsAtom);
+  const deletePet = async (petId: number) => {
+    try {
+      await deletePetAPI(token, petId);
+
+      const updatedReports = userReports.filter((r) => r.id !== petId);
+      setUserReports(updatedReports);
+      console.log("Mascota eliminada correctamente");
+    } catch (error) {
+      console.log("error detele pet:", error);
+    }
+  };
+  return { deletePet };
+}
+
+export function useEditPet() {
+  const setUserReports = useSetRecoilState(userReportsAtom);
+  const userReports = useRecoilValue(userReportsAtom);
+
+  const editPet = async (updatedPetData: {
+    id: number;
+    userId: number;
+    petName: string;
+    petImgURL: string;
+    petState: "Perdido";
+    petLat: number;
+    petLong: number;
+    petLocation: string;
+  }) => {
+    try {
+      const updated = await editPetAPI(
+        updatedPetData.id,
+        updatedPetData.userId,
+        updatedPetData.petName,
+        updatedPetData.petImgURL,
+        updatedPetData.petState,
+        updatedPetData.petLat,
+        updatedPetData.petLong,
+        updatedPetData.petLocation
+      );
+
+      // Actualizamos la mascota en el array de userReports
+      const newReports = userReports.map((pet) =>
+        pet.id === updatedPetData.id ? updated.pet : pet
+      );
+      setUserReports(newReports);
+
+      return updated;
+    } catch (error) {
+      console.error("Error al editar mascota:", error);
+      throw error;
+    }
+  };
+
+  return { editPet };
 }

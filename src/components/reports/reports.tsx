@@ -14,9 +14,9 @@ import {
   reportIdAtom,
   userReportsAtom,
 } from "../../recoil";
-import { useUserReports } from "../../hooks/hooks";
+import { useUserReports, useDeletePet, useEditPet } from "../../hooks/hooks";
 import { MapSelector } from "../map/map";
-import { getCoords, reportPetAPI } from "../../lib/api";
+import { getCoords, reportPetAPI, editPetAPI } from "../../lib/api";
 import "./reports.css";
 
 function ReportPet({}) {
@@ -219,13 +219,12 @@ function MyReports() {
   const navigate = useNavigate();
   const token = useRecoilValue(loggedInState);
   const userData = useRecoilValue(userDataAtom);
-  const userReports = useRecoilValue(userReportsAtom); // ✅
+  const userReports = useRecoilValue(userReportsAtom);
   const [reportId, setReportId] = useRecoilState(reportIdAtom);
-
+  const { handleUpdateUserReports } = useUserReports();
+  const { deletePet } = useDeletePet();
   console.log("userdata", userData);
   console.log("userReports", userReports);
-
-  const { handleUpdateUserReports } = useUserReports();
 
   useEffect(() => {
     if (token) {
@@ -250,7 +249,8 @@ function MyReports() {
                   type="button"
                   className="edit-button"
                   handleClick={() => {
-                    navigate(`/edit-report/${report.id}`);
+                    setReportId(report.id);
+                    navigate(`/edit-report`);
                   }}
                 >
                   Editar
@@ -259,7 +259,7 @@ function MyReports() {
                   type="button"
                   className="delete-button"
                   handleClick={() => {
-                    // Futuro: eliminar mascota
+                    deletePet(report.id);
                   }}
                 >
                   Eliminar
@@ -275,4 +275,193 @@ function MyReports() {
   );
 }
 
-export { ReportPet, MyReports };
+function EditReportPet({}) {
+  const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const userData = useRecoilValue(userDataAtom);
+  const [userLocation, setUserLocation] = useRecoilState(userLocationAtom);
+  const [userReports, setUserReports] = useRecoilState(userReportsAtom);
+  const reportId = useRecoilValue(reportIdAtom);
+
+  const [error, setError] = useState("");
+  const [imgURL, setImgURL] = useState("");
+  const [petName, setPetName] = useState("");
+  const [petLocation, setPetLocation] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { editPet } = useEditPet();
+
+  const petToEdit = userReports?.find((r) => r.id === reportId);
+
+  useEffect(() => {
+    if (petToEdit) {
+      setPetName(petToEdit.petName);
+      setImgURL(petToEdit.petImgURL);
+      setPetLocation(petToEdit.petLocation);
+      setUserLocation({
+        lat: petToEdit.petLat,
+        lng: petToEdit.petLong,
+        location: petToEdit.petLocation,
+      });
+    }
+  }, [petToEdit]);
+
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => setImgURL(reader.result as string);
+    reader.readAsDataURL(file);
+    setSelectedFile(file);
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!petName || !petLocation || !userLocation.lat || !userLocation.lng) {
+      setError("Todos los campos son obligatorios.");
+      return;
+    }
+
+    try {
+      let newImageUrl = imgURL;
+
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("upload_preset", "pet-finder");
+
+        const res = await fetch(
+          "https://api.cloudinary.com/v1_1/ddaw8l94t/image/upload",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+        const data = await res.json();
+        newImageUrl = data.secure_url;
+      }
+
+      if (!petToEdit) {
+        setError("No se encontró la mascota a editar.");
+        return;
+      }
+
+      await editPet({
+        id: petToEdit.id,
+        userId: userData.id,
+        petName,
+        petImgURL: newImageUrl,
+        petState: "Perdido", // O el estado que manejes
+        petLat: userLocation.lat,
+        petLong: userLocation.lng,
+        petLocation,
+      });
+
+      navigate("/my-reports");
+    } catch (err) {
+      console.error("Error al actualizar:", err);
+      setError("Error al actualizar el reporte.");
+    }
+  };
+
+  return (
+    <section className="create-report-container">
+      <h1>Editar reporte</h1>
+      <p>Modificá los datos de tu mascota.</p>
+      <div className="form-container">
+        <form onSubmit={onSubmit}>
+          <label>Nombre:</label>
+          <InputPrincipal
+            type="text"
+            value={petName}
+            onChange={(e) => setPetName(e.target.value)}
+            placeholder="Ingrese el nombre de la mascota"
+          />
+
+          <div className="img-container">
+            <label>Adjuntar foto 👇</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImage}
+              ref={fileInputRef}
+              style={{ display: "none" }}
+            />
+            <img
+              src={imgURL}
+              alt="preview"
+              className="preview-img"
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                cursor: "pointer",
+                width: "100%",
+                maxWidth: "300px",
+                borderRadius: "12px",
+              }}
+            />
+          </div>
+
+          <div className="map-container">
+            <label>Ubicación:</label>
+            <MapSelector
+              onSelect={(lat, lng, location) => {
+                setUserLocation({ lat, lng, location });
+                setPetLocation(location || "");
+              }}
+            />
+            <InputPrincipal
+              type="text"
+              value={petLocation}
+              onChange={(e) => setPetLocation(e.target.value)}
+              placeholder="Ingrese la ubicación"
+            />
+            <ButtonPrincipal
+              type="button"
+              className="search-button"
+              handleClick={async () => {
+                const coords = await getCoords(petLocation);
+                if (coords) {
+                  setUserLocation({
+                    lat: coords.lat,
+                    lng: coords.lng,
+                    location: petLocation,
+                  });
+                } else {
+                  setError("No se encontró la ubicación.");
+                }
+              }}
+            >
+              Buscar
+            </ButtonPrincipal>
+            <p className="info">
+              Hacé click en el mapa para seleccionar la ubicación o escribí la
+              dirección.
+            </p>
+          </div>
+
+          <div className="options-container">
+            <ButtonPrincipal
+              type="submit"
+              className="report-button"
+              handleClick={() => {}}
+            >
+              Guardar cambios
+            </ButtonPrincipal>
+            <ButtonPrincipal
+              type="button"
+              className="cancel-button"
+              handleClick={() => navigate("/my-reports")}
+            >
+              Cancelar
+            </ButtonPrincipal>
+          </div>
+          {error && <ErrorMessage message={error} />}
+        </form>
+      </div>
+    </section>
+  );
+}
+
+export { ReportPet, MyReports, EditReportPet };
