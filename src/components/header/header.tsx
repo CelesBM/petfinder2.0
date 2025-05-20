@@ -49,7 +49,14 @@ function Header() {
           >
             Mis datos
           </li>
-          <li>Reportes cercanos</li>
+          <li
+            onClick={() => {
+              navigate("/nearby-pets");
+              setMenuOpen(false);
+            }}
+          >
+            Reportes cercanos
+          </li>
           <li
             onClick={() => {
               navigate("/my-reports");
@@ -89,7 +96,14 @@ function Header() {
           >
             Mis datos
           </li>
-          <li>Reportes cercanos</li>
+          <li
+            onClick={() => {
+              navigate("/nearby-pets");
+              setMenuOpen(false);
+            }}
+          >
+            Reportes cercanos
+          </li>
           <li
             onClick={() => {
               navigate("/my-reports");

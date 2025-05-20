@@ -187,3 +187,16 @@ export async function editPetAPI(
   });
   return response.json();
 }
+
+export async function getNearbyPetsAPI(lat: number, lng: number) {
+  const response = await fetch(
+    API_BASE_URL + `/nearby-pets?lat=${lat}&lng=${lng}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+      },
+    }
+  );
+  return response.json();
+}

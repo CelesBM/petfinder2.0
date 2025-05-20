@@ -14,7 +14,7 @@ import { EditData } from "../pages/personal-data/edit";
 import { CreateReportPage } from "../pages/report/create-report";
 import { MyReportsPage } from "../pages/report/my-reports";
 import { EditReportPage } from "../pages/report/edit-report";
-
+import { NearbyPetsPage } from "../pages/nearby-pets/nearby-pets";
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
@@ -27,6 +27,7 @@ const router = createBrowserRouter(
       <Route path="/create-report" element={<CreateReportPage />} />
       <Route path="/my-reports" element={<MyReportsPage />} />
       <Route path="/edit-report" element={<EditReportPage />} />
+      <Route path="/nearby-pets" element={<NearbyPetsPage />} />
     </Route>
   )
 );

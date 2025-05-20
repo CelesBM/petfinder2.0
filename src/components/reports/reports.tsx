@@ -6,32 +6,32 @@ import { ErrorMessage } from "../../ui/error/error";
 import { useRecoilState, useRecoilValue } from "recoil";
 import {
   userLocationAtom,
-  loggedInAtom,
   userDataAtom,
   reportPet,
   loggedInState,
-  reportPetState,
   reportIdAtom,
   userReportsAtom,
 } from "../../recoil";
-import { useUserReports, useDeletePet, useEditPet } from "../../hooks/hooks";
+import {
+  useUserReports,
+  useDeletePet,
+  useEditPet,
+  useNearbyPets,
+} from "../../hooks/hooks";
 import { MapSelector } from "../map/map";
-import { getCoords, reportPetAPI, editPetAPI } from "../../lib/api";
+import { getCoords, reportPetAPI } from "../../lib/api";
 import "./reports.css";
 
 function ReportPet({}) {
   const userData = useRecoilValue(userDataAtom); //datos del usuario: email, fullname, id, localidad, userLat, userLong
-  //const token = useRecoilValue(loggedInAtom); //token del usuario
   const fileInputRef = useRef<HTMLInputElement>(null); //referencia a un elemento input de tipo file inicializado como null
   const navigate = useNavigate();
-  const { handleUpdateUserReports } = useUserReports();
   const [userReports, setUserReports] = useRecoilState(userReportsAtom);
   const [error, setError] = useState("");
   const [imgURL, setImgURL] = useState(
     "https://res.cloudinary.com/dkzmrfgus/image/upload/v1715798301/pet-finder/reports/gdiqwa4ttphpeuaarxzw.png"
   );
   const [userLocation, setUserLocation] = useRecoilState(userLocationAtom);
-  const [petReport, setPetReport] = useRecoilState(reportPet); //guardar reporte en recoil
 
   const handleImage = (e) => {
     const file = e.target.files?.[0]; //primer archivo seleccionado
@@ -72,8 +72,6 @@ function ReportPet({}) {
       );
       const uploadData = await uploadRes.json();
       const cloudinaryUrl = uploadData.secure_url;
-      console.log("Imagen subida:", cloudinaryUrl);
-
       const userId = userData.id;
       const petLat = userLocation.lat;
       const petLong = userLocation.lng;
@@ -87,11 +85,8 @@ function ReportPet({}) {
         petLong,
         petLocation
       );
-
       if (res && res.id) {
-        // setPetReport([res]);
-        setUserReports((prev) => [...(prev || []), res]); // ✅ agrega el nuevo al array
-
+        setUserReports((prev) => [...(prev || []), res]); //agrega el nuevo al array
         navigate("/my-reports");
       } else {
         setError("Error al guardar el reporte.");
@@ -223,8 +218,8 @@ function MyReports() {
   const [reportId, setReportId] = useRecoilState(reportIdAtom);
   const { handleUpdateUserReports } = useUserReports();
   const { deletePet } = useDeletePet();
-  console.log("userdata", userData);
-  console.log("userReports", userReports);
+  //console.log("userdata", userData);
+  //console.log("userReports", userReports);
 
   useEffect(() => {
     if (token) {
@@ -278,19 +273,16 @@ function MyReports() {
 function EditReportPet({}) {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const userData = useRecoilValue(userDataAtom);
   const [userLocation, setUserLocation] = useRecoilState(userLocationAtom);
   const [userReports, setUserReports] = useRecoilState(userReportsAtom);
   const reportId = useRecoilValue(reportIdAtom);
-
   const [error, setError] = useState("");
   const [imgURL, setImgURL] = useState("");
   const [petName, setPetName] = useState("");
   const [petLocation, setPetLocation] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { editPet } = useEditPet();
-
   const petToEdit = userReports?.find((r) => r.id === reportId);
 
   useEffect(() => {
@@ -306,24 +298,21 @@ function EditReportPet({}) {
     }
   }, [petToEdit]);
 
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImage = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onloadend = () => setImgURL(reader.result as string);
     reader.readAsDataURL(file);
     setSelectedFile(file);
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-
     if (!petName || !petLocation || !userLocation.lat || !userLocation.lng) {
       setError("Todos los campos son obligatorios.");
       return;
     }
-
     try {
       let newImageUrl = imgURL;
 
@@ -331,7 +320,6 @@ function EditReportPet({}) {
         const formData = new FormData();
         formData.append("file", selectedFile);
         formData.append("upload_preset", "pet-finder");
-
         const res = await fetch(
           "https://api.cloudinary.com/v1_1/ddaw8l94t/image/upload",
           {
@@ -347,18 +335,16 @@ function EditReportPet({}) {
         setError("No se encontró la mascota a editar.");
         return;
       }
-
       await editPet({
         id: petToEdit.id,
         userId: userData.id,
         petName,
         petImgURL: newImageUrl,
-        petState: "Perdido", // O el estado que manejes
+        petState: "Perdido",
         petLat: userLocation.lat,
         petLong: userLocation.lng,
         petLocation,
       });
-
       navigate("/my-reports");
     } catch (err) {
       console.error("Error al actualizar:", err);
@@ -464,4 +450,46 @@ function EditReportPet({}) {
   );
 }
 
-export { ReportPet, MyReports, EditReportPet };
+function NearbyPets() {
+  const userCoords = useRecoilValue(userLocationAtom);
+  const { pets, loading, error } = useNearbyPets(
+    userCoords?.lat || 0,
+    userCoords?.lng || 0
+  );
+
+  if (!userCoords) return <p>Esperando ubicación del usuario...</p>;
+  if (loading) return <p>Cargando mascotas cercanas...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  return (
+    <section className="myreports-container">
+      <h1>Mascotas cercanas</h1>
+      {pets.length === 0 ? (
+        <p>No hay mascotas reportadas cerca.</p>
+      ) : (
+        <div className="container">
+          {pets.map((pet) => (
+            <div className="pet-container" key={pet.objectID}>
+              <img src={pet.petImgURL} alt={`Mascota: ${pet.petName}`} />
+              <div className="info-pet">
+                <h3>{pet.petName}</h3>
+                <h5>{pet.petLocation}</h5>
+              </div>
+              <div className="button-container">
+                <ButtonPrincipal
+                  type="button"
+                  className="edit-button"
+                  handleClick={() => {}}
+                >
+                  Reportar
+                </ButtonPrincipal>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+export { ReportPet, MyReports, EditReportPet, NearbyPets };

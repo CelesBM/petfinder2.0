@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   loggedInAtom,
   userDataAtom,
-  userDataState,
   userLocationAtom,
   reportPet,
   userReportsAtom,
@@ -18,6 +17,7 @@ import {
   getAllPetsAPI,
   deletePetAPI,
   editPetAPI,
+  getNearbyPetsAPI,
 } from "../lib/api";
 
 export function useLogin() {
@@ -205,19 +205,37 @@ export function useEditPet() {
         updatedPetData.petLong,
         updatedPetData.petLocation
       );
-
-      // Actualizamos la mascota en el array de userReports
       const newReports = userReports.map((pet) =>
         pet.id === updatedPetData.id ? updated.pet : pet
       );
       setUserReports(newReports);
-
       return updated;
     } catch (error) {
       console.error("Error al editar mascota:", error);
       throw error;
     }
   };
-
   return { editPet };
+}
+
+export function useNearbyPets(lat: number, lng: number) {
+  const [pets, setPets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!lat || !lng) return;
+    setLoading(true);
+    getNearbyPetsAPI(lat, lng)
+      .then((res) => {
+        setPets(res);
+        setError(null);
+      })
+      .catch((e) => {
+        setError(e.message);
+      })
+      .finally(() => setLoading(false));
+  }, [lat, lng]);
+
+  return { pets, loading, error };
 }
