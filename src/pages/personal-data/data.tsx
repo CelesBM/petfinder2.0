@@ -1,16 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./data.css";
 import { ButtonPrincipal } from "../../ui/button/button";
 import { useRecoilValue } from "recoil";
-import { userDataAtom } from "../../recoil";
+import { userDataAtom, loggedInState } from "../../recoil";
 
 function Data() {
   const navigate = useNavigate();
   const userData = useRecoilValue(userDataAtom);
-
   const name = userData?.fullname || "Sin datos";
   const location = userData?.localidad || "Sin datos";
+  const token = useRecoilValue(loggedInState);
+
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
 
   return (
     <>

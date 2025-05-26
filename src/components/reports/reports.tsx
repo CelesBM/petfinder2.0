@@ -7,7 +7,6 @@ import { useRecoilState, useRecoilValue } from "recoil";
 import {
   userLocationAtom,
   userDataAtom,
-  reportPet,
   loggedInState,
   reportIdAtom,
   userReportsAtom,
@@ -17,6 +16,7 @@ import {
   useDeletePet,
   useEditPet,
   useNearbyPets,
+  useReportNearbyPet,
 } from "../../hooks/hooks";
 import { MapSelector } from "../map/map";
 import { getCoords, reportPetAPI } from "../../lib/api";
@@ -24,6 +24,7 @@ import "./reports.css";
 
 function ReportPet({}) {
   const userData = useRecoilValue(userDataAtom); //datos del usuario: email, fullname, id, localidad, userLat, userLong
+  const token = useRecoilValue(loggedInState);
   const fileInputRef = useRef<HTMLInputElement>(null); //referencia a un elemento input de tipo file inicializado como null
   const navigate = useNavigate();
   const [userReports, setUserReports] = useRecoilState(userReportsAtom);
@@ -32,6 +33,12 @@ function ReportPet({}) {
     "https://res.cloudinary.com/dkzmrfgus/image/upload/v1715798301/pet-finder/reports/gdiqwa4ttphpeuaarxzw.png"
   );
   const [userLocation, setUserLocation] = useRecoilState(userLocationAtom);
+
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
 
   const handleImage = (e) => {
     const file = e.target.files?.[0]; //primer archivo seleccionado
@@ -220,6 +227,11 @@ function MyReports() {
   const { deletePet } = useDeletePet();
   //console.log("userdata", userData);
   //console.log("userReports", userReports);
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
 
   useEffect(() => {
     if (token) {
@@ -272,6 +284,8 @@ function MyReports() {
 
 function EditReportPet({}) {
   const navigate = useNavigate();
+  const token = useRecoilValue(loggedInState);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const userData = useRecoilValue(userDataAtom);
   const [userLocation, setUserLocation] = useRecoilState(userLocationAtom);
@@ -450,12 +464,104 @@ function EditReportPet({}) {
   );
 }
 
+function ReportModal({ petName, onClose, onSubmit }) {
+  const [message, setMessage] = useState("");
+  const [reportName, setReportName] = useState("");
+  const [reportPhone, setReportPhone] = useState("");
+
+  const handleSubmit = () => {
+    if (!message || !reportName || !reportPhone) {
+      alert("Por favor completá todos los campos.");
+      return;
+    }
+    onSubmit({ message, reportName, reportPhone });
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-container">
+        <h2>
+          Reportar a <span>{petName}</span>
+        </h2>
+        <label>Tu nombre</label>
+        <input
+          type="text"
+          value={reportName}
+          onChange={(e) => setReportName(e.target.value)}
+          placeholder="Nombre completo"
+        />
+        <label>Tu teléfono</label>
+        <input
+          type="tel"
+          value={reportPhone}
+          onChange={(e) => setReportPhone(e.target.value)}
+          placeholder="Teléfono de contacto"
+        />
+        <label htmlFor="report">¿Dónde lo viste?</label>
+        <textarea
+          id="report"
+          placeholder="Escribe aquí..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <div className="modal-buttons">
+          <ButtonPrincipal type="button" handleClick={handleSubmit}>
+            Enviar
+          </ButtonPrincipal>
+          <ButtonPrincipal
+            type="button"
+            className="delete-button"
+            handleClick={onClose}
+          >
+            Cancelar
+          </ButtonPrincipal>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function NearbyPets() {
+  const token = useRecoilValue(loggedInState);
+  const navigate = useNavigate();
   const userCoords = useRecoilValue(userLocationAtom);
   const { pets, loading, error } = useNearbyPets(
     userCoords?.lat || 0,
     userCoords?.lng || 0
   );
+  const { reportPet } = useReportNearbyPet(pets);
+  const [selectedPet, setSelectedPet] = useState<null | {
+    petName: string;
+    objectID: string;
+  }>(null);
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    }
+  }, [token, navigate]);
+  const handleReport = async ({
+    message,
+    reportName,
+    reportPhone,
+  }: {
+    message: string;
+    reportName: string;
+    reportPhone: string;
+  }) => {
+    setSelectedPet(null); //cierra el modal
+    if (!selectedPet) return;
+    try {
+      await reportPet(selectedPet.objectID, {
+        reportName,
+        reportPhone,
+        reportAbout: message,
+      });
+      alert("¡Reporte enviado con éxito!");
+      setSelectedPet(null);
+    } catch (err) {
+      alert("Hubo un error al enviar el reporte.");
+    }
+  };
 
   if (!userCoords) return <p>Esperando ubicación del usuario...</p>;
   if (loading) return <p>Cargando mascotas cercanas...</p>;
@@ -464,6 +570,13 @@ function NearbyPets() {
   return (
     <section className="myreports-container">
       <h1>Mascotas cercanas</h1>
+      {selectedPet && (
+        <ReportModal
+          petName={selectedPet.petName}
+          onClose={() => setSelectedPet(null)}
+          onSubmit={handleReport}
+        />
+      )}
       {pets.length === 0 ? (
         <p>No hay mascotas reportadas cerca.</p>
       ) : (
@@ -479,7 +592,12 @@ function NearbyPets() {
                 <ButtonPrincipal
                   type="button"
                   className="edit-button"
-                  handleClick={() => {}}
+                  handleClick={() =>
+                    setSelectedPet({
+                      petName: pet.petName,
+                      objectID: pet.objectID,
+                    })
+                  }
                 >
                   Reportar
                 </ButtonPrincipal>

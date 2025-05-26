@@ -18,6 +18,8 @@ import {
   deletePetAPI,
   editPetAPI,
   getNearbyPetsAPI,
+  reportNearbyPetAPI,
+  sendReportEmailAPI,
 } from "../lib/api";
 
 export function useLogin() {
@@ -169,7 +171,6 @@ export function useDeletePet() {
   const deletePet = async (petId: number) => {
     try {
       await deletePetAPI(token, petId);
-
       const updatedReports = userReports.filter((r) => r.id !== petId);
       setUserReports(updatedReports);
       console.log("Mascota eliminada correctamente");
@@ -238,4 +239,29 @@ export function useNearbyPets(lat: number, lng: number) {
   }, [lat, lng]);
 
   return { pets, loading, error };
+}
+
+export function useReportNearbyPet(pets: any[]) {
+  const reportPet = async (
+    petId: string,
+    data: {
+      reportName: string;
+      reportPhone: string;
+      reportAbout: string;
+    }
+  ) => {
+    const pet = pets.find((p) => p.objectID === petId);
+    if (!pet) throw new Error("Mascota no encontrada");
+    console.log("🐶 Mascota a reportar:", pet);
+    const email = "celestemonterodev@gmail.com";
+    try {
+      await sendReportEmailAPI(email, data);
+      await reportNearbyPetAPI(petId, data);
+      return { success: true };
+    } catch (error) {
+      console.error("Error al reportar mascota:", error);
+      throw error;
+    }
+  };
+  return { reportPet };
 }

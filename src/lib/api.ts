@@ -200,3 +200,46 @@ export async function getNearbyPetsAPI(lat: number, lng: number) {
   );
   return response.json();
 }
+
+export async function reportNearbyPetAPI(
+  petId: string,
+  data: {
+    reportName: string;
+    reportPhone: string;
+    reportAbout: string;
+  }
+) {
+  const response = await fetch(API_BASE_URL + "/report-pet", {
+    method: "POST",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({
+      id: petId,
+      ...data,
+    }),
+  });
+
+  return response.json();
+}
+
+export async function sendReportEmailAPI(
+  email: string,
+  data: {
+    reportName: string;
+    reportPhone: string;
+    reportAbout: string;
+  }
+) {
+  const response = await fetch(API_BASE_URL + "/send-email", {
+    method: "POST",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      ...data,
+    }),
+  });
+  return response.json();
+}
