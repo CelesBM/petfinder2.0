@@ -1,18 +1,18 @@
 const path = require("path");
-//const liveServer = require("live-server");
+const liveServer = require("live-server");
 const dev = process.env.NODE_ENV == "development";
 const webpack = require("webpack");
 
-/*if (dev) {
+if (dev) {
   liveServer.start({
     root: "./",
     file: "index.html",
   });
-}*/
+}
 
 module.exports = {
-  // watch: dev,
-  mode: "development",
+  watch: dev,
+  mode: dev ? "development" : "production",
   entry: "./src/index.tsx",
   module: {
     rules: [
@@ -48,12 +48,12 @@ module.exports = {
   },
   devServer: {
     static: {
-      directory: path.join(__dirname, "./"), // sirve archivos desde raíz
+      directory: path.join(__dirname, "./"),
     },
     port: 5174,
     host: "localhost",
     open: true,
-    historyApiFallback: true, // necesario si usás React Router
+    historyApiFallback: true,
   },
   plugins: [],
 };
