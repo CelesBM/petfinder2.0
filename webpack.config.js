@@ -2,6 +2,7 @@ const path = require("path");
 const liveServer = require("live-server");
 const dev = process.env.NODE_ENV == "development";
 const webpack = require("webpack");
+const CopyPlugin = require("copy-webpack-plugin");
 
 if (dev) {
   liveServer.start({
@@ -55,5 +56,9 @@ module.exports = {
     open: true,
     historyApiFallback: true,
   },
-  plugins: [],
+  plugins: [
+    new CopyPlugin({
+      patterns: [{ from: "index.html", to: "index.html" }],
+    }),
+  ],
 };
