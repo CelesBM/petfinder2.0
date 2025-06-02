@@ -3,6 +3,7 @@ const liveServer = require("live-server");
 const dev = process.env.NODE_ENV == "development";
 const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 if (dev) {
   liveServer.start({
@@ -24,7 +25,7 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        use: [dev ? "style-loader" : MiniCssExtractPlugin.loader, "css-loader"],
       },
       {
         test: /\.(png|jpe?g|gif|svg)$/i,
@@ -59,6 +60,9 @@ module.exports = {
   plugins: [
     new CopyPlugin({
       patterns: [{ from: "index.html", to: "index.html" }],
+    }),
+    new MiniCssExtractPlugin({
+      filename: "index.css",
     }),
   ],
 };
