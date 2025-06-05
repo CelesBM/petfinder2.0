@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "https://selfless-unity-production-3b69.up.railway.app";
 
 export async function registerAPI(
   email: string,
